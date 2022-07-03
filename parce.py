@@ -48,12 +48,6 @@ def collect_data(city):
         response = requests.get(url=f'https://prodoctorov.ru/{city}/lpu/?page={page}', headers=headers)
         response.encoding = 'utf-8'
 
-        # with open('index.html', 'w', encoding='utf-8') as file:
-        #     file.write(response.text)
-        #
-        # with open('index.html', encoding='utf-8') as file:
-        #     src = file.read()
-
         # Парсинг отдельной страницы
         soup = BeautifulSoup(response.text, 'lxml')
 
