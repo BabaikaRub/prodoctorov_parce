@@ -2,10 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 import sys
 import csv
 import math
+import os
 
 from ui import Ui_MainWindow
 from cities import city
@@ -29,8 +31,14 @@ class Parce(QtWidgets.QMainWindow):
     def on_click(self):
         self.collect_data(city[self.ui.comboBox.currentText()])
 
-    def get_headers(self):
+    def popup_end(self):
+        msg = QMessageBox()
+        msg.setWindowTitle('Информация')
+        msg.setText('Файл успешно записан в папку "Результаты парсинга"')
 
+        x = msg.exec_()
+
+    def get_headers(self):
         headers = {
             'user-agent': self.ua.random,
             'accept': 'application/json, text/plain, */*',
@@ -40,7 +48,7 @@ class Parce(QtWidgets.QMainWindow):
 
         return headers
 
-    # Функция вычисления кол-ва страниц при пагинации
+    # Метод вычисления кол-ва страниц при пагинации
     def numbers_of_pages(self, city):
         address = f'https://prodoctorov.ru/{city}/lpu/?page=1'
 
@@ -54,9 +62,11 @@ class Parce(QtWidgets.QMainWindow):
         return math.ceil(int(total) / 20)
 
     def collect_data(self, city):
-
         # Создание файла с результатами парсинга
-        with open(f'{city}_res.csv', 'w', encoding='utf-8-sig', newline='') as file:
+        if not os.path.isdir('Результаты парсинга'):
+            os.mkdir('Результаты парсинга')
+
+        with open(f'Результаты парсинга/{city}_res.csv', 'w', encoding='utf-8-sig', newline='') as file:
             writer = csv.writer(file, delimiter=';')
             writer.writerow(['Наименование клиники', 'Направление', 'Номер телефона'])
 
@@ -85,10 +95,11 @@ class Parce(QtWidgets.QMainWindow):
                     phone = 'Телефона нет'
 
                 # Запись результатов парсинга
-                with open(f'{city}_res.csv', 'a', encoding='utf-8-sig', newline='') as file:
+                with open(f'Результаты парсинга/{city}_res.csv', 'a', encoding='utf-8-sig', newline='') as file:
                     writer = csv.writer(file, delimiter=';')
                     writer.writerow([name, category, phone])
 
+        self.popup_end()
         print('Файл записан')
 
 
