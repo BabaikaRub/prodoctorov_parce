@@ -20,6 +20,6 @@ city = {'Москва': 'moskva',
            'Саратов': 'saratov',
            'Тольятти': 'tolyatti',
           'Ульяновск': 'ulyanovsk',
-          'Уфа':'ufa',
+          'Уфа': 'ufa',
           'Челябинск': 'chelyabinsk',
           'Ярославль': 'yaroslavl'}
