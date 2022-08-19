@@ -1,42 +1,77 @@
-import requests
-from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMessageBox
-
+import traceback
 import sys
 import csv
 import math
 import os
+
+import requests
+from PyQt5.QtCore import QObject, pyqtSignal, QThread
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 from ui import Ui_MainWindow
 from cities import city
 
 
 # Класс парсера
-class Parce(QtWidgets.QMainWindow):
+class App(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.init_ui()
-        self.ua = UserAgent()
         self.ui.comboBox.addItems(city.keys())
-        self.ui.pushButton.clicked.connect(self.on_click)
+        self.ui.pushButton.clicked.connect(self.start_parce)
 
     def init_ui(self):
         self.setWindowTitle('ПроДокторов')
 
-    def on_click(self):
-        self.collect_data(city[self.ui.comboBox.currentText()])
+    def start_parce(self):
+        self.obj = Parce(city[self.ui.comboBox.currentText()])
+        self.t = QThread()
+
+        self.obj.moveToThread(self.t)
+        self.t.started.connect(self.obj.start)
+        self.obj.startSignal.connect(self.start_info)
+        self.obj.updateSignal.connect(self.update_info)
+        self.obj.finishSignal.connect(self.popup_end)
+
+        self.t.start()
+
+    def start_info(self):
+        self.ui.label_3.setText('Парсинг начался! Ждите...')
+        self.ui.pushButton.setEnabled(0)
+
+    def update_info(self, info):
+        self.ui.label_3.setText(f'Спаршено {info} строк информации!')
 
     def popup_end(self):
         msg = QMessageBox()
         msg.setWindowTitle('Информация')
         msg.setText('Файл успешно записан в папку "Результаты парсинга"')
+        self.ui.label_3.setText('')
+        self.ui.pushButton.setEnabled(1)
 
         x = msg.exec_()
+
+
+class Parce(QObject):
+    startSignal = pyqtSignal()
+    updateSignal = pyqtSignal(int)
+    finishSignal = pyqtSignal()
+
+    def __init__(self, town):
+        super().__init__()
+        self.ua = UserAgent()
+        self.town = town
+
+    def start(self):
+        self.collect_data()
+
+        self.finishSignal.emit()
 
     def get_headers(self):
         headers = {
@@ -49,8 +84,8 @@ class Parce(QtWidgets.QMainWindow):
         return headers
 
     # Метод вычисления кол-ва страниц при пагинации
-    def numbers_of_pages(self, city):
-        address = f'https://prodoctorov.ru/{city}/lpu/?page=1'
+    def numbers_of_pages(self):
+        address = f'https://prodoctorov.ru/{self.town}/lpu/?page=1'
 
         response = requests.get(url=address, headers=self.get_headers())
         soup = BeautifulSoup(response.text, 'lxml')
@@ -61,20 +96,24 @@ class Parce(QtWidgets.QMainWindow):
 
         return math.ceil(int(total) / 20)
 
-    def collect_data(self, city):
+    def collect_data(self):
+
+        self.startSignal.emit()
+
         # Создание файла с результатами парсинга
         if not os.path.isdir('Результаты парсинга'):
             os.mkdir('Результаты парсинга')
 
-        with open(f'Результаты парсинга/{city}_res.csv', 'w', encoding='utf-8-sig', newline='') as file:
+        with open(f'Результаты парсинга/{self.town}_res.csv', 'w', encoding='utf-8-sig', newline='') as file:
             writer = csv.writer(file, delimiter=';')
             writer.writerow(['Наименование клиники', 'Направление', 'Номер телефона'])
 
-        amount = self.numbers_of_pages(city)
+        amount = self.numbers_of_pages()
+        count = 0
 
         for page in range(1, amount + 1):
             # Отправка запроса на сайт
-            response = requests.get(url=f'https://prodoctorov.ru/{city}/lpu/?page={page}', headers=self.get_headers())
+            response = requests.get(url=f'https://prodoctorov.ru/{self.town}/lpu/?page={page}', headers=self.get_headers())
             response.encoding = 'utf-8'
 
             # Парсинг отдельной страницы
@@ -95,17 +134,32 @@ class Parce(QtWidgets.QMainWindow):
                     phone = 'Телефона нет'
 
                 # Запись результатов парсинга
-                with open(f'Результаты парсинга/{city}_res.csv', 'a', encoding='utf-8-sig', newline='') as file:
+                with open(f'Результаты парсинга/{self.town}_res.csv', 'a', encoding='utf-8-sig', newline='') as file:
                     writer = csv.writer(file, delimiter=';')
                     writer.writerow([name, category, phone])
 
-        self.popup_end()
-        print('Файл записан')
+                if count >= 100 and count % 100 == 0:
+                    self.updateSignal.emit(count)
+                    count += 1
+                else:
+                    count += 1
+                    continue
 
 
 def main():
-    app = QtWidgets.QApplication([])
-    application = Parce()
+
+    def log_uncaught_exceptions(ex_cls, ex, tb):
+        text = '{}: {}:\n'.format(ex_cls.__name__, ex)
+        text += ''.join(traceback.format_tb(tb))
+
+        print(text)
+        QtWidgets.QMessageBox.critical(None, 'Error', text)
+        quit()
+
+    sys.excepthook = log_uncaught_exceptions
+
+    app = QtWidgets.QApplication(sys.argv)
+    application = App()
     application.show()
 
     sys.exit(app.exec_())
