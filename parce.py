@@ -15,7 +15,7 @@ from ui import Ui_MainWindow
 from cities import city
 
 
-# Класс парсера
+# Класс приложения
 class App(QtWidgets.QMainWindow):
 
     def __init__(self):
@@ -58,6 +58,7 @@ class App(QtWidgets.QMainWindow):
         x = msg.exec_()
 
 
+# Класс парсера
 class Parce(QObject):
     startSignal = pyqtSignal()
     updateSignal = pyqtSignal(int)
