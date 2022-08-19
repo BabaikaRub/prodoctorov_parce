@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>468</width>
-    <height>573</height>
+    <width>718</width>
+    <height>587</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,17 +21,21 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>370</y>
-      <width>301</width>
+      <x>180</x>
+      <y>400</y>
+      <width>361</width>
       <height>91</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>GOST Type BU</family>
-      <pointsize>12</pointsize>
+      <pointsize>18</pointsize>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 1px solid #030303;
+border-radius: 30;</string>
     </property>
     <property name="text">
      <string>Старт</string>
@@ -40,10 +44,10 @@
    <widget class="QComboBox" name="comboBox">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>260</y>
-      <width>201</width>
-      <height>21</height>
+      <x>110</x>
+      <y>250</y>
+      <width>221</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -53,16 +57,16 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>80</y>
-      <width>191</width>
+      <x>260</x>
+      <y>90</y>
+      <width>231</width>
       <height>91</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>GOST Type AU</family>
-      <pointsize>24</pointsize>
+      <family>GOST Type BU</family>
+      <pointsize>28</pointsize>
      </font>
     </property>
     <property name="text">
@@ -72,8 +76,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>210</y>
+      <x>110</x>
+      <y>200</y>
       <width>201</width>
       <height>31</height>
      </rect>
@@ -81,11 +85,33 @@
     <property name="font">
      <font>
       <family>GOST Type BU</family>
-      <pointsize>14</pointsize>
+      <pointsize>18</pointsize>
      </font>
     </property>
     <property name="text">
      <string>Выберите город</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>320</y>
+      <width>511</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>GOST Type BU</family>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
     </property>
    </widget>
   </widget>
